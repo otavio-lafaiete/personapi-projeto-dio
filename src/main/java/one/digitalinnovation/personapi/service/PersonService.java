@@ -6,10 +6,9 @@ import one.digitalinnovation.personapi.entity.Person;
 import one.digitalinnovation.personapi.exception.PersonNotFoundException;
 import one.digitalinnovation.personapi.mapper.PersonMapper;
 import one.digitalinnovation.personapi.repository.PersonRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,9 +30,7 @@ public class PersonService {
         Person personToSave = personMapper.toModel(personDTO);
         Person savedPerson = personRepository.save(personToSave);
 
-        return MessageResponseDTO.builder()
-                .message("Created Person With ID: " + savedPerson.getId())
-                .build();
+        return createMessageResponse(savedPerson.getId(), "Saved person with id ");
     }
 
     public List<PersonDTO> listAll() {
@@ -46,11 +43,28 @@ public class PersonService {
         return personMapper.toDTO(person);
     }
 
-    public Person verifyIfExists(Long id) throws PersonNotFoundException{
-        return personRepository.findById(id).orElseThrow(() -> new PersonNotFoundException(id));
-    }
     public void deleteById(Long id) throws PersonNotFoundException{
        verifyIfExists(id);
        personRepository.deleteById(id);
+    }
+
+    public MessageResponseDTO updateById(Long id, PersonDTO personDTO) throws PersonNotFoundException{
+
+        verifyIfExists(id);
+
+        Person personToUpdate = personMapper.toModel(personDTO);
+        Person updatedPerson = personRepository.save(personToUpdate);
+
+        return createMessageResponse(updatedPerson.getId(), "Updated person with id ");
+    }
+
+    private Person verifyIfExists(Long id) throws PersonNotFoundException{
+        return personRepository.findById(id).orElseThrow(() -> new PersonNotFoundException(id));
+    }
+
+    private MessageResponseDTO createMessageResponse(Long id, String s) {
+        return MessageResponseDTO.builder()
+                .message(s + id)
+                .build();
     }
 }
